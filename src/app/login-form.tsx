@@ -13,6 +13,12 @@ export function LoginForm() {
 
   const handleAuth = async (e: React.FormEvent, isSignUp: boolean) => {
     e.preventDefault()
+    
+    if (!email || !password) {
+      alert('Vui lòng nhập đầy đủ Email và Mật khẩu')
+      return
+    }
+
     setLoading(true)
     
     let error
@@ -55,21 +61,17 @@ export function LoginForm() {
           required
         />
       </div>
-      <div className="flex gap-4 pt-2">
+      <div className="pt-2">
         <button 
           onClick={(e) => handleAuth(e, false)}
           disabled={loading}
-          className="flex-1 bg-blue-600 text-white rounded-md py-2 font-medium hover:bg-blue-700"
+          className="w-full bg-blue-600 text-white rounded-md py-2 font-medium hover:bg-blue-700"
         >
-          Đăng nhập
+          {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
         </button>
-        <button 
-          onClick={(e) => handleAuth(e, true)}
-          disabled={loading}
-          className="flex-1 bg-slate-100 text-slate-700 rounded-md py-2 font-medium hover:bg-slate-200"
-        >
-          Đăng ký
-        </button>
+      </div>
+      <div className="text-center text-sm mt-4">
+        Chưa có tài khoản? <a href="/register" className="text-blue-600 hover:underline">Đăng ký ví mới</a>
       </div>
     </form>
   )
