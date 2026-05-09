@@ -30,4 +30,10 @@ const getEnvVars = () => {
   }
 }
 
-export const envConfig = getEnvVars()
+// Bọc bằng hàm Proxy để CHỈ kích hoạt kiểm tra biến môi trường lúc Runtime (lúc code chạy thật),
+// chứ không kiểm tra lúc Vercel đang Build (tránh lỗi module evaluation)
+export const envConfig = new Proxy({} as ReturnType<typeof getEnvVars>, {
+  get: (target, prop) => {
+    return getEnvVars()[prop as keyof ReturnType<typeof getEnvVars>];
+  }
+});
