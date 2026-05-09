@@ -4,8 +4,12 @@ import { Users, Wallet, ArrowUpRight, ArrowDownRight, Clock, ShieldCheck, Zap } 
 export default async function AdminPage() {
   const supabase = createAdminClient()
 
-  // Thống kê tổng quan
-  const { count: totalUsers } = await supabase.from('users').select('*', { count: 'exact', head: true })
+  // Thống kê tổng quan (Đếm chi tiết từ Auth Admin để lấy source)
+  const { data: authData } = await supabase.auth.admin.listUsers()
+  const allUsers = authData?.users || []
+  const totalUsers = allUsers.length
+  const chatbotUsers = allUsers.filter(u => u.user_metadata?.source === 'chatbot').length
+  const walletUsers = totalUsers - chatbotUsers
   
   // Tổng tiền đang lưu thông
   const { data: totalMoney } = await supabase.rpc('get_total_system_balance')
@@ -37,9 +41,13 @@ export default async function AdminPage() {
               <Users size={24} />
             </div>
           </div>
-          <div className="mt-6 flex items-center text-xs font-semibold text-blue-700 bg-blue-50 w-fit px-3 py-1 rounded-full border border-blue-100">
-            <ArrowUpRight size={14} className="mr-1" />
-            <span>Tăng trưởng ổn định</span>
+          <div className="mt-6 flex flex-col gap-2">
+            <div className="flex items-center text-xs font-semibold text-blue-700 bg-blue-50 w-fit px-3 py-1 rounded-full border border-blue-100">
+              <span>Đăng ký trực tiếp (Ví): {walletUsers}</span>
+            </div>
+            <div className="flex items-center text-xs font-semibold text-purple-700 bg-purple-50 w-fit px-3 py-1 rounded-full border border-purple-100">
+              <span>Đồng bộ từ Chatbot: {chatbotUsers}</span>
+            </div>
           </div>
         </div>
 

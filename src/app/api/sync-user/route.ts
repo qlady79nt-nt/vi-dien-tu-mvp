@@ -24,6 +24,7 @@ export async function POST(request: Request) {
       email: email,
       password: password,
       email_confirm: true, // Tự động xác thực email để user vào được luôn
+      user_metadata: { source: 'chatbot' } // Đánh dấu user này đến từ hệ thống Chatbot
     })
 
     // 3. Xử lý lỗi (Nếu user đã tồn tại thì báo success luôn để không làm gián đoạn)
