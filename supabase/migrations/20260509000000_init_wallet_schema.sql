@@ -207,9 +207,7 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public;
 
--- Insert data test cho product
--- Insert data test cho product
-insert into credit_products (code, name, price_per_unit) values ('AI_CREDIT', 'AI Generation Credit', 1000) on conflict do nothing;
+
 
 -- ==========================================
 -- GIAI ĐOẠN 4: ADMIN RPCS
