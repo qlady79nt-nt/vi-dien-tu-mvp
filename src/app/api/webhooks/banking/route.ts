@@ -36,13 +36,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Ignored' })
     }
 
-    // Tìm mã NAP_XXXXXX trong nội dung chuyển khoản bằng Regex
-    const match = content.match(/NAP_[A-Z0-9]{6}/)
+    // Tìm mã NAP_XXXXXX hoặc NAPXXXXXX trong nội dung chuyển khoản bằng Regex
+    // Thêm cờ 'i' để không phân biệt hoa thường, và '?' để dấu gạch dưới là tùy chọn
+    const match = content.match(/NAP_?[a-zA-Z0-9]{6}/i)
     if (!match) {
       return NextResponse.json({ message: 'Không tìm thấy mã nạp tiền' })
     }
 
-    const depositCode = match[0]
+    // Chuẩn hóa mã: Viết HOA toàn bộ và đảm bảo có dấu gạch dưới 'NAP_'
+    let depositCode = match[0].toUpperCase()
+    if (!depositCode.includes('_')) {
+      depositCode = depositCode.replace('NAP', 'NAP_')
+    }
 
     // Gọi Postgres RPC để thực thi Atomic Transaction
     const { data, error } = await supabase.rpc('process_deposit', {
