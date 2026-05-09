@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import LogoutButton from '@/components/LogoutButton'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -27,7 +28,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="font-bold text-xl text-red-500">SUPER ADMIN</div>
         <div className="text-sm flex gap-4 items-center">
           <span className="text-slate-400">{user.email}</span>
-          <Link href="/dashboard" className="text-blue-400 hover:underline">Về trang User</Link>
+          <Link href="/dashboard" className="text-blue-400 hover:underline pr-4 border-r border-slate-700">Về trang User</Link>
+          <LogoutButton />
         </div>
       </header>
       <main className="p-8">
