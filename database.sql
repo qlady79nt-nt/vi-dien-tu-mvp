@@ -37,7 +37,7 @@ create table credit_products (
 create table user_credits (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references users(id) on delete cascade,
-  product_code text references credit_products(code),
+  product_code text not null references credit_products(code),
   balance bigint default 0 constraint check_positive_credit check (balance >= 0),
   unique(user_id, product_code)
 );
@@ -94,9 +94,11 @@ begin
   insert into public.wallets (user_id, cash_balance)
   values (new.id, 0);
 
-  -- Khởi tạo sẵn AI_CREDIT bằng 0 (có thể tặng 10 tùy ý)
-  insert into public.user_credits (user_id, product_code, balance)
-  values (new.id, 'AI_CREDIT', 0);
+  -- Khởi tạo sẵn AI_CREDIT bằng 0 (chỉ tạo nếu product tồn tại)
+  if exists (select 1 from public.credit_products where code = 'AI_CREDIT') then
+    insert into public.user_credits (user_id, product_code, balance)
+    values (new.id, 'AI_CREDIT', 0);
+  end if;
   
   return new;
 end;
@@ -205,4 +207,4 @@ end;
 $$ language plpgsql security definer;
 
 -- Insert data test cho product
--- insert into credit_products (code, name, price_per_unit) values ('AI_CREDIT', 'AI Generation Credit', 1000);
+insert into credit_products (code, name, price_per_unit) values ('AI_CREDIT', 'AI Generation Credit', 1000);
