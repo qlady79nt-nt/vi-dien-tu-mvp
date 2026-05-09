@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 export default function DepositPage() {
-  const [amount, setAmount] = useState<number>(100000)
+  const [amount, setAmount] = useState<number>(10000)
   const [loading, setLoading] = useState(false)
   const [qrData, setQrData] = useState<{ code: string, amount: number, qrUrl: string } | null>(null)
 
@@ -36,7 +36,7 @@ export default function DepositPage() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Chọn số tiền nạp</label>
             <div className="grid grid-cols-3 gap-4">
-              {[50000, 100000, 200000, 500000].map(amt => (
+              {[10000, 20000, 50000, 100000, 200000, 500000].map(amt => (
                 <button
                   key={amt}
                   onClick={() => setAmount(amt)}
