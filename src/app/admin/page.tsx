@@ -21,6 +21,36 @@ export default async function AdminPage() {
     .order('created_at', { ascending: false })
     .limit(10)
 
+  // Bảng danh sách User kèm Ví tiền và Credit
+  const { data: dbUsers } = await supabase
+    .from('users')
+    .select(`
+      id,
+      email,
+      created_at,
+      wallets(cash_balance),
+      user_credits(balance, product_code)
+    `)
+    .order('created_at', { ascending: false })
+
+  const mergedUsers = dbUsers?.map(dbU => {
+    const authU = allUsers.find(u => u.id === dbU.id)
+    
+    // Tùy theo cách Supabase trả về (Array hay Object)
+    const cash = Array.isArray(dbU.wallets) ? dbU.wallets[0]?.cash_balance : (dbU.wallets as any)?.cash_balance
+    const creditsArr = Array.isArray(dbU.user_credits) ? dbU.user_credits : []
+    const ai_credit = creditsArr.find((c: any) => c.product_code === 'AI_CREDIT')?.balance || 0
+
+    return {
+      id: dbU.id,
+      email: dbU.email,
+      created_at: dbU.created_at,
+      source: authU?.user_metadata?.source || 'wallet',
+      cash: cash || 0,
+      ai_credit: ai_credit
+    }
+  }) || []
+
   return (
     <div className="space-y-8">
       <div>
@@ -70,6 +100,78 @@ export default async function AdminPage() {
             <ShieldCheck size={14} className="mr-1" />
             <span>Đã đồng bộ & Đối soát</span>
           </div>
+        </div>
+      </div>
+
+      {/* Bảng Quản lý User */}
+      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white">
+          <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <Users size={18} className="text-slate-500" />
+            Danh sách Khách hàng
+          </h2>
+          <div className="text-xs font-bold px-3 py-1 bg-blue-50 rounded-full text-blue-600 border border-blue-200">
+            Tổng cộng: {totalUsers}
+          </div>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+              <tr>
+                <th className="px-8 py-5">Khách hàng</th>
+                <th className="px-8 py-5">Ngày tham gia</th>
+                <th className="px-8 py-5">Nguồn gốc</th>
+                <th className="px-8 py-5 text-right">Ví VNĐ</th>
+                <th className="px-8 py-5 text-right">AI Credit</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {mergedUsers.map((u) => (
+                <tr key={u.id} className="hover:bg-slate-50 transition-colors group">
+                  <td className="px-8 py-5 font-semibold text-slate-800">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-100 to-purple-100 flex items-center justify-center text-xs font-bold text-indigo-700 shadow-inner">
+                        {u.email?.charAt(0).toUpperCase()}
+                      </div>
+                      {u.email}
+                    </div>
+                  </td>
+                  <td className="px-8 py-5 text-slate-500 font-medium">
+                    {new Date(u.created_at).toLocaleString('vi-VN', {
+                      day: '2-digit', month: '2-digit', year: 'numeric',
+                      hour: '2-digit', minute: '2-digit'
+                    })}
+                  </td>
+                  <td className="px-8 py-5">
+                    {u.source === 'chatbot' ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200">
+                        Chatbot Sync
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200">
+                        Wallet Direct
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-8 py-5 text-right font-black text-emerald-600">
+                    {new Intl.NumberFormat('vi-VN').format(u.cash)} ₫
+                  </td>
+                  <td className="px-8 py-5 text-right font-black text-rose-600">
+                    {new Intl.NumberFormat('vi-VN').format(u.ai_credit)}
+                  </td>
+                </tr>
+              ))}
+              
+              {mergedUsers.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-8 py-12 text-center text-slate-500 font-medium">
+                    Chưa có khách hàng nào trong hệ thống.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
