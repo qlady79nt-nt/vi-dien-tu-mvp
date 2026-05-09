@@ -103,7 +103,7 @@ begin
   
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 -- Trigger chạy sau khi auth.users được insert
 drop trigger if exists on_auth_user_created on auth.users;
@@ -162,7 +162,7 @@ begin
 
   return jsonb_build_object('success', true, 'new_balance', v_new_balance);
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 
 -- RPC 2: Mua Credit bằng Tiền mặt (Atomic)
@@ -205,7 +205,7 @@ begin
 
   return jsonb_build_object('success', true, 'new_cash', v_new_cash_balance, 'new_credit', v_new_credit_balance);
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 -- Insert data test cho product
 -- Insert data test cho product
@@ -222,4 +222,4 @@ begin
   select coalesce(sum(cash_balance), 0) into v_total from wallets;
   return v_total;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
