@@ -5,27 +5,34 @@
 
 -- 1. BẢNG USERS
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view own data" ON users;
 CREATE POLICY "Users can view own data" ON users FOR SELECT USING (auth.uid() = id);
 
 -- 2. BẢNG WALLETS
 ALTER TABLE wallets ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view own wallet" ON wallets;
 CREATE POLICY "Users can view own wallet" ON wallets FOR SELECT USING (auth.uid() = user_id);
 
 -- 3. BẢNG USER_CREDITS
 ALTER TABLE user_credits ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view own credits" ON user_credits;
 CREATE POLICY "Users can view own credits" ON user_credits FOR SELECT USING (auth.uid() = user_id);
 
 -- 4. BẢNG TRANSACTIONS
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view own tx" ON transactions;
 CREATE POLICY "Users can view own tx" ON transactions FOR SELECT USING (auth.uid() = user_id);
 
 -- 5. BẢNG DEPOSIT_REQUESTS
 ALTER TABLE deposit_requests ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view own deposits" ON deposit_requests;
 CREATE POLICY "Users can view own deposits" ON deposit_requests FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can insert own deposits" ON deposit_requests;
 CREATE POLICY "Users can insert own deposits" ON deposit_requests FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- 6. BẢNG ADMIN_AUDIT_LOGS
 ALTER TABLE admin_audit_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins can view audit logs" ON admin_audit_logs;
 CREATE POLICY "Admins can view audit logs" ON admin_audit_logs FOR SELECT USING (
   EXISTS (SELECT 1 FROM users WHERE users.id = auth.uid() AND users.role IN ('admin', 'finance'))
 );
