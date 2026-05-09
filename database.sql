@@ -6,6 +6,7 @@
 create table users (
   id uuid primary key references auth.users(id) on delete cascade,
   email text,
+  role text default 'user' constraint check_role check (role in ('user', 'admin', 'staff')),
   created_at timestamptz default now()
 );
 
@@ -207,4 +208,18 @@ end;
 $$ language plpgsql security definer;
 
 -- Insert data test cho product
-insert into credit_products (code, name, price_per_unit) values ('AI_CREDIT', 'AI Generation Credit', 1000);
+-- Insert data test cho product
+insert into credit_products (code, name, price_per_unit) values ('AI_CREDIT', 'AI Generation Credit', 1000) on conflict do nothing;
+
+-- ==========================================
+-- GIAI ĐOẠN 4: ADMIN RPCS
+-- ==========================================
+-- RPC 3: Lấy tổng tiền toàn hệ thống (Dành cho Admin Dashboard)
+create or replace function get_total_system_balance() returns bigint as $$
+declare
+  v_total bigint;
+begin
+  select coalesce(sum(cash_balance), 0) into v_total from wallets;
+  return v_total;
+end;
+$$ language plpgsql security definer;
