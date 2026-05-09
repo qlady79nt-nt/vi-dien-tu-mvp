@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // Mẫu Webhook body
 // {
@@ -11,6 +11,12 @@ import { createAdminClient } from '@/lib/supabase/server'
 
 export async function POST(request: Request) {
   try {
+    // 1. Verify Internal Request (Chặn kẻ gian gọi API này để tiêu credit)
+    const authHeader = request.headers.get('Authorization')
+    if (authHeader !== `Bearer ${process.env.INTERNAL_API_KEY}`) {
+      return NextResponse.json({ error: 'Unauthorized Internal API' }, { status: 401 })
+    }
+
     const { user_id, product_code, amount, source_app } = await request.json()
     // Dùng Admin SDK vì API này có thể được gọi server-to-server không có session
     const supabase = createAdminClient()
