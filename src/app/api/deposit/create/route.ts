@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { envConfig } from '@/config/env'
 
 export async function POST(request: Request) {
   try {
@@ -36,10 +37,8 @@ export async function POST(request: Request) {
     if (error) throw error
 
     // Tạo QR URL (Ví dụ dùng vietqr.io hoặc sepay)
-    // Lấy BANK_BIN và STK từ biến môi trường
-    const BANK_BIN = process.env.BANK_BIN || '970422' // Mặc định MB Bank nếu không set
-    const STK = process.env.BANK_STK || '0123456789'
-    const qrUrl = `https://img.vietqr.io/image/${BANK_BIN}-${STK}-compact2.jpg?amount=${amount}&addInfo=${code}`
+    // Lấy thông tin cấu hình từ env.ts (đã được validate lúc startup)
+    const qrUrl = `https://img.vietqr.io/image/${envConfig.BANK_BIN}-${envConfig.BANK_ACCOUNT_NUMBER}-compact2.jpg?amount=${amount}&addInfo=${code}`
 
     return NextResponse.json({
       success: true,

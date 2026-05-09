@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { envConfig } from '@/config/env'
 
 // Mẫu Webhook body của SePay
 // {
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
     // 1. Verify Webhook (Bảo mật cực kỳ quan trọng)
     const authHeader = request.headers.get('Authorization')
     // Nếu dùng SePay, thường là: 'Apikey <YOUR_SEPAY_TOKEN>'
-    if (authHeader !== `Apikey ${process.env.SEPAY_WEBHOOK_TOKEN}`) {
+    if (authHeader !== `Apikey ${envConfig.SEPAY_WEBHOOK_TOKEN}`) {
       console.warn('Webhook mạo danh bị chặn!')
       return NextResponse.json({ error: 'Unauthorized Webhook' }, { status: 401 })
     }
