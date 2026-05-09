@@ -17,6 +17,14 @@ import { createAdminClient } from '@/lib/supabase/server'
 
 export async function POST(request: Request) {
   try {
+    // 1. Verify Webhook (Bảo mật cực kỳ quan trọng)
+    const authHeader = request.headers.get('Authorization')
+    // Nếu dùng SePay, thường là: 'Apikey <YOUR_SEPAY_TOKEN>'
+    if (authHeader !== `Apikey ${process.env.SEPAY_WEBHOOK_TOKEN}`) {
+      console.warn('Webhook mạo danh bị chặn!')
+      return NextResponse.json({ error: 'Unauthorized Webhook' }, { status: 401 })
+    }
+
     const body = await request.json()
     const supabase = createAdminClient() // Dùng Admin SDK vì không có session
 
