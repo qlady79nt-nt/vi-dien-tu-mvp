@@ -27,9 +27,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <LogoutButton />
         </div>
       </header>
-      <div className="flex">
-        <aside className="w-64 bg-white border-r min-h-[calc(100vh-68px)] p-4">
-          <nav className="space-y-2">
+      <div className="flex flex-col md:flex-row">
+        <aside className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r md:min-h-[calc(100vh-68px)] p-4">
+          <nav className="flex flex-col space-y-2">
             <Link href="/dashboard" className="block px-4 py-2 rounded-md hover:bg-slate-100">
               Tổng quan
             </Link>
@@ -38,15 +38,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
             </Link>
             
             {userData?.role === 'admin' && (
-              <div className="pt-4 mt-4 border-t border-slate-100">
+              <div className="pt-2 mt-2 md:pt-4 md:mt-4 border-t border-slate-100">
                 <Link href="/admin" className="block px-4 py-2 rounded-md bg-red-50 text-red-700 hover:bg-red-100 font-medium">
-                  🛡️ Quản trị hệ thống
+                  🛡️ Quản trị
                 </Link>
               </div>
             )}
           </nav>
         </aside>
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4 md:p-8">
           {children}
         </main>
       </div>

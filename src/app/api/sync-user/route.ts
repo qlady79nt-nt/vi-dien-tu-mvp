@@ -17,6 +17,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Yêu cầu cung cấp email và password' }, { status: 400 })
     }
 
+    const sourceApp = request.headers.get('x-source-app') || 'chatbot' // Mặc định là chatbot nếu không gửi
+
     const supabase = createAdminClient()
 
     // 2. Gọi Supabase Auth Admin để tạo tài khoản
@@ -24,7 +26,7 @@ export async function POST(request: Request) {
       email: email,
       password: password,
       email_confirm: true, // Tự động xác thực email để user vào được luôn
-      user_metadata: { source: 'chatbot' } // Đánh dấu user này đến từ hệ thống Chatbot
+      user_metadata: { source: sourceApp.toLowerCase() } // Đánh dấu App nào đã gọi API này
     })
 
     // 3. Xử lý lỗi (Nếu user đã tồn tại thì báo success luôn để không làm gián đoạn)

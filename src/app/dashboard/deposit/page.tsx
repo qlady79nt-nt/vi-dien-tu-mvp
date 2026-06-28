@@ -35,7 +35,7 @@ export default function DepositPage() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Chọn số tiền nạp</label>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
               {[10000, 20000, 50000, 100000, 200000, 500000].map(amt => (
                 <button
                   key={amt}
