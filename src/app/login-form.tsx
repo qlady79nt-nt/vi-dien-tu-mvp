@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
@@ -10,6 +10,7 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
 
   const handleAuth = async (e: React.FormEvent, isSignUp: boolean) => {
@@ -34,7 +35,8 @@ export function LoginForm() {
     if (error) {
       alert(error.message)
     } else {
-      router.push('/dashboard')
+      const nextUrl = searchParams.get('next')
+      router.push(nextUrl ? nextUrl : '/dashboard')
       router.refresh()
     }
     setLoading(false)

@@ -14,6 +14,19 @@ export default async function AdminPage() {
   // Tổng tiền đang lưu thông
   const { data: totalMoney } = await supabase.rpc('get_total_system_balance')
 
+  // Tổng nạp theo ứng dụng
+  const { data: topupTx } = await supabase
+    .from('transactions')
+    .select('source_app, amount')
+    .eq('type', 'TOPUP')
+    .eq('status', 'success')
+
+  const revenueByApp = topupTx?.reduce((acc: Record<string, number>, tx) => {
+    const app = tx.source_app || 'wallet'
+    acc[app] = (acc[app] || 0) + tx.amount
+    return acc
+  }, {}) || {}
+
   // 10 giao dịch gần nhất
   const { data: recentTx } = await supabase
     .from('transactions')
@@ -36,7 +49,6 @@ export default async function AdminPage() {
   const mergedUsers = dbUsers?.map(dbU => {
     const authU = allUsers.find(u => u.id === dbU.id)
     
-    // Tùy theo cách Supabase trả về (Array hay Object)
     const cash = Array.isArray(dbU.wallets) ? dbU.wallets[0]?.cash_balance : (dbU.wallets as any)?.cash_balance
     const creditsArr = Array.isArray(dbU.user_credits) ? dbU.user_credits : []
     const ai_credit = creditsArr.find((c: any) => c.product_code === 'AI_CREDIT')?.balance || 0
@@ -82,13 +94,13 @@ export default async function AdminPage() {
         </div>
 
         {/* Card 2: Tổng Tiền Lưu Thông */}
-        <div className="group relative bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-500 overflow-hidden lg:col-span-2">
+        <div className="group relative bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-500 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="absolute right-0 top-0 w-64 h-64 bg-emerald-100/50 blur-[80px] rounded-full group-hover:bg-emerald-200/50 transition-colors duration-700"></div>
           <div className="relative flex justify-between items-start">
             <div>
-              <h2 className="text-slate-500 text-sm font-bold uppercase tracking-wider mb-2">Tổng VNĐ User đang giữ</h2>
-              <div className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 tracking-tight">
+              <h2 className="text-slate-500 text-sm font-bold uppercase tracking-wider mb-2">Tổng VNĐ đang giữ</h2>
+              <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 tracking-tight">
                 {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalMoney || 0)}
               </div>
             </div>
@@ -99,6 +111,25 @@ export default async function AdminPage() {
           <div className="mt-6 flex items-center text-xs font-semibold text-emerald-700 bg-emerald-50 w-fit px-3 py-1 rounded-full border border-emerald-200">
             <ShieldCheck size={14} className="mr-1" />
             <span>Đã đồng bộ & Đối soát</span>
+          </div>
+        </div>
+
+        {/* Card 3: Doanh thu theo App */}
+        <div className="group relative bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-500 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-orange-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative">
+            <h2 className="text-slate-500 text-sm font-bold uppercase tracking-wider mb-4">Tổng nạp theo ứng dụng</h2>
+            <div className="space-y-3">
+              {Object.entries(revenueByApp).map(([app, amount]) => (
+                <div key={app} className="flex justify-between items-center text-sm">
+                  <span className="font-semibold text-slate-700 capitalize px-2 py-1 bg-slate-100 rounded-md">{app}</span>
+                  <span className="font-bold text-slate-900">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount as number)}</span>
+                </div>
+              ))}
+              {Object.keys(revenueByApp).length === 0 && (
+                <div className="text-sm text-slate-500">Chưa có dữ liệu nạp tiền</div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -192,7 +223,7 @@ export default async function AdminPage() {
             <thead className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
               <tr>
                 <th className="px-8 py-5">Thời gian</th>
-                <th className="px-8 py-5">Khách hàng</th>
+                <th className="px-8 py-5">Khách hàng & Nguồn</th>
                 <th className="px-8 py-5">Loại GD</th>
                 <th className="px-8 py-5 text-right">Số tiền</th>
                 <th className="px-8 py-5">Trạng thái</th>
@@ -210,11 +241,19 @@ export default async function AdminPage() {
                       })}
                     </td>
                     <td className="px-8 py-5 font-semibold text-slate-800">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-100 to-purple-100 flex items-center justify-center text-xs font-bold text-indigo-700 shadow-inner">
-                          {tx.users?.email?.charAt(0).toUpperCase()}
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-100 to-purple-100 flex items-center justify-center text-[10px] font-bold text-indigo-700 shadow-inner">
+                            {tx.users?.email?.charAt(0).toUpperCase()}
+                          </div>
+                          <span>{tx.users?.email}</span>
                         </div>
-                        {tx.users?.email}
+                        {tx.source_app && (
+                          <div className="text-xs text-slate-500 mt-1 pl-8">
+                            <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">Nguồn: {tx.source_app}</span>
+                            {tx.source_user_id && <span className="ml-2">ID: {tx.source_user_id}</span>}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-8 py-5">

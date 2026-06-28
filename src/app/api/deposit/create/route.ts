@@ -4,7 +4,7 @@ import { envConfig } from '@/config/env'
 
 export async function POST(request: Request) {
   try {
-    const { amount } = await request.json()
+    const { amount, sourceApp, sourceUserId, sourceUserEmail } = await request.json()
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -31,7 +31,10 @@ export async function POST(request: Request) {
         code,
         amount,
         status: 'pending',
-        expired_at
+        expired_at,
+        source_app: sourceApp || 'wallet',
+        source_user_id: sourceUserId || null,
+        source_user_email: sourceUserEmail || null
       })
 
     if (error) throw error

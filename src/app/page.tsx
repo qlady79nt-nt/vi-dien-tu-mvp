@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { LoginForm } from './login-form'
+import { Suspense } from 'react'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -14,7 +15,9 @@ export default async function Home() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="p-8 bg-white rounded-xl shadow-lg w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-6 text-slate-800">Đăng nhập Ví Điện Tử MVP</h1>
-        <LoginForm />
+        <Suspense fallback={<div className="text-center text-sm text-slate-500">Đang tải...</div>}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   )
